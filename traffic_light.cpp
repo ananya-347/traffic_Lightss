@@ -3,12 +3,26 @@
 #include <chrono>
 #include <atomic>
 #include <ctime>
+
 using namespace std;
+
+enum class Light { RED, YELLOW, GREEN };
+
+struct TrafficState {
+    atomic<Light> northSouth{Light::GREEN};
+    atomic<Light> eastWest{Light::RED};
+};
+
 atomic<bool> stop(false);
-enum TrafficLight {
-    RED,
-    GREEN,
-    YELLOW};
+
+const char* toString(Light l){
+    switch(l){
+        case Light::RED: return "RED";
+        case Light::YELLOW: return "YELLOW";
+        case Light::GREEN: return "GREEN";
+    }
+    return "";
+}
 void logMessage(const std::string& message) {
     std::time_t now = std::time(nullptr);
     std::tm* localTime = std::localtime(&now);
@@ -19,34 +33,72 @@ void logMessage(const std::string& message) {
          << localTime->tm_sec << "] "
          << message << endl;
 }
-void Traffic_light(TrafficLight &Currlight){
-    while (!stop){
-    switch (Currlight){
-    case RED:
-    logMessage("TRAFFIC LIGHT : RED (STOP)");
- std::this_thread::sleep_for(chrono::seconds(5));
-Currlight= YELLOW;
-break;
- case YELLOW:
-  logMessage("TRAFFIC LIGHT : YELLOW (WAIT!)");
-std :: this_thread::sleep_for(chrono::seconds(5));
-Currlight=GREEN;
-break;
- case GREEN:
-  logMessage("TRAFFIC LIGHT : GREEN (GO:))");
-std:: this_thread::sleep_for(chrono::seconds(2));
-Currlight=RED;
-break;}}}
+
+void controller(TrafficState &state){
+    while(!stop){
+// North-South GREEN
+state.northSouth = Light::GREEN;
+state.eastWest = Light::RED;
+logMessage("Controller: North-South GREEN");
+
+for(int i = 5; i > 0 && !stop; --i)
+    this_thread::sleep_for(chrono::seconds(1));
+
+// North-South YELLOW
+state.northSouth = Light::YELLOW;
+logMessage("Controller: North-South YELLOW");
+
+for(int i = 2; i > 0 && !stop; --i)
+    this_thread::sleep_for(chrono::seconds(1));
+
+// East-West GREEN
+state.northSouth = Light::RED;
+state.eastWest = Light::GREEN;
+logMessage("Controller: East-West GREEN");
+
+for(int i = 5; i > 0 && !stop; --i)
+    this_thread::sleep_for(chrono::seconds(1));
+
+// East-West YELLOW
+state.eastWest = Light::YELLOW;
+logMessage("Controller: East-West YELLOW");
+
+for(int i = 2; i > 0 && !stop; --i)
+    this_thread::sleep_for(chrono::seconds(1));
+
+state.eastWest = Light::RED;
+    }
+}
+void monitor(TrafficState &state)
+{
+    while(!stop)
+    {
+        Light ns = state.northSouth.load();
+        Light ew = state.eastWest.load();
+
+        logMessage(
+            "Monitor -> North-South: " +
+            string(toString(ns)) +
+            " | East-West: " +
+            string(toString(ew))
+        );
+
+        this_thread::sleep_for(chrono::seconds(1));
+    }
+}
+
 int main(){
-    TrafficLight Currlight =RED;
-thread colour(Traffic_light, std::ref(Currlight));
-cout << "Press ENTER to stop\n";
+    TrafficState state;
+    thread t1(controller, ref(state));
+    thread t2(monitor, ref(state));
+
+    cout<<"Press Enter to stop...\n";
     cin.get();
 
-    
     stop = true;
-    colour.join();
-
+    t1.join();
+    t2.join();
+    
     cout << "Program exited safely hehe :)\n";
-return 0;
+    return 0;
 }
