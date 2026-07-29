@@ -1,10 +1,22 @@
 # traffic_Lightss
-Developed a multithreaded traffic light simulation using modern C++. Implemented a state machine to manage traffic signal transitions with configurable timing. Used atomic variables and thread synchronization to ensure safe inter-thread communication and graceful shutdown. Demonstrates real-time system behavior and concurrency control.
-# Tech Stack:
-1) C++17
-2) STL (thread, chrono, atomic)
-# Concepts Demonstrated:
-1) Multithreading
-2) State machine
-3) Concurrency safety
-4) Time-based simulation
+
+Developed a multithreaded traffic light simulation using modern C++.
+
+## Features
+- Two concurrent threads:
+  - **Controller thread**: Implements a finite state machine to control North-South and East-West traffic lights.
+  - **Monitor thread**: Continuously reads and displays the current signal state.
+- Configurable timing using `std::chrono`.
+- Thread-safe shared state using `std::atomic`.
+- Graceful shutdown using an atomic stop flag and `join()`.
+
+## Tech Stack
+- C++17
+- STL (`thread`, `chrono`, `atomic`)
+
+## Concepts Demonstrated
+- Multithreading
+- Finite State Machine (FSM)
+- Concurrency safety
+- Time-based simulation
+- Inter-thread communication through shared atomic state
