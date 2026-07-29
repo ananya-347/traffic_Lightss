@@ -14,7 +14,8 @@ struct TrafficState {
 };
 
 atomic<bool> stop(false);
-
+const int GREEN_TIME = 5;
+const int YELLOW_TIME = 2;
 const char* toString(Light l){
     switch(l){
         case Light::RED: return "RED";
@@ -41,14 +42,14 @@ state.northSouth = Light::GREEN;
 state.eastWest = Light::RED;
 logMessage("Controller: North-South GREEN");
 
-for(int i = 5; i > 0 && !stop; --i)
+for(int i = GREEN_TIME; i > 0 && !stop; --i)
     this_thread::sleep_for(chrono::seconds(1));
 
 // North-South YELLOW
 state.northSouth = Light::YELLOW;
 logMessage("Controller: North-South YELLOW");
 
-for(int i = 2; i > 0 && !stop; --i)
+for(int i = YELLOW_TIME; i > 0 && !stop; --i)
     this_thread::sleep_for(chrono::seconds(1));
 
 // East-West GREEN
@@ -56,14 +57,14 @@ state.northSouth = Light::RED;
 state.eastWest = Light::GREEN;
 logMessage("Controller: East-West GREEN");
 
-for(int i = 5; i > 0 && !stop; --i)
+for(int i = GREEN_TIME; i > 0 && !stop; --i)
     this_thread::sleep_for(chrono::seconds(1));
 
 // East-West YELLOW
 state.eastWest = Light::YELLOW;
 logMessage("Controller: East-West YELLOW");
 
-for(int i = 2; i > 0 && !stop; --i)
+for(int i = YELLOW_TIME; i > 0 && !stop; --i)
     this_thread::sleep_for(chrono::seconds(1));
 
 state.eastWest = Light::RED;
